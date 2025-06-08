@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+          "/usr/local/include/linux-headers/include",
+          "/usr/src/linux-headers-6.14.0-15/include",
+          "/usr/src/linux-headers-6.14.0-15/include/uapi",
+          "/usr/src/linux-headers-6.14.0-15/arch/arm64/include",
+          "/usr/src/linux-headers-6.14.0-15/arch/arm64/include/uapi",
+          "/usr/include",
+          "/usr/include/asm"
+      ],
+      "defines": [
+          "__KERNEL__",
+          "__BPF_TRACING__"
+      ],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "linux-clang-arm64"
+    }
+  ],
+  "version": 4
+}
