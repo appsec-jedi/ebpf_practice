@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
 )
@@ -29,6 +30,12 @@ func main() {
 	}
 	defer objs.Close()
 
+	tp, err := link.Tracepoint("sched", "sched_process_exec", objs.HandleExec, nil)
+	if err != nil {
+		log.Fatalf("attaching to tracepoint: %s", err)
+	}
+	defer tp.Close()
+
 	rd, err := ringbuf.NewReader(objs.Events)
 	if err != nil {
 		log.Fatalf("opening ringbuf reader: %s", err)
@@ -40,33 +47,28 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
 
-loop:
+	go func() {
+		<-sig
+		log.Println("Interrupt received, exiting...")
+		rd.Close()
+	}()
+
 	for {
-		select {
-		case <-sig:
-			break loop
-		default:
-			record, err := rd.Read()
-			if err != nil {
-				if errors.Is(err, ringbuf.ErrClosed) {
-					break loop
-				}
-				log.Printf("reading from ringbuf: %s", err)
-				continue
+		record, err := rd.Read()
+		if err != nil {
+			if errors.Is(err, ringbuf.ErrClosed) {
+				return
 			}
-
-			var e event
-			data := record.RawSample
-			if len(data) < binary.Size(e) {
-				log.Printf("short read: expected %d bytes, got %d", binary.Size(e), len(data))
-				continue
-			}
-			if err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &e); err != nil {
-				log.Printf("parsing event: %s", err)
-				continue
-			}
-
-			fmt.Printf("PID %d executed %s\n", e.Pid, string(bytes.Trim(e.Comm[:], "\x00")))
+			log.Printf("reading from ringbuf: %s", err)
+			continue
 		}
+
+		var e event
+		if err := binary.Read(bytes.NewReader(record.RawSample), binary.LittleEndian, &e); err != nil {
+			log.Printf("parsing event: %s", err)
+			continue
+		}
+
+		fmt.Printf("PID %d executed %s\n", e.Pid, string(bytes.Trim(e.Comm[:], "\x00")))
 	}
 }
