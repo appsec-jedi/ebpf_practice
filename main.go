@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/ringbuf"
@@ -15,8 +16,9 @@ import (
 )
 
 type event struct {
-	Pid  uint32
-	Comm [16]byte
+	Timestamp uint64
+	Pid       uint32
+	Comm      [16]byte
 }
 
 func main() {
@@ -69,6 +71,9 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("PID %d executed %s\n", e.Pid, string(bytes.Trim(e.Comm[:], "\x00")))
+		timestamp := time.Unix(0, int64(e.Timestamp)).Format("2006-01-02 15:04:05")
+		comm := string(bytes.Trim(e.Comm[:], "\x00"))
+
+		fmt.Printf("[%s] PID %d executed %s\n", timestamp, e.Pid, comm)
 	}
 }
