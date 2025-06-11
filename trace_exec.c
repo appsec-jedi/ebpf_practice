@@ -22,10 +22,6 @@ struct {
 SEC("tracepoint/sched/sched_process_exec")
 int handle_exec(struct trace_event_raw_sched_process_exec *ctx) {
     struct event *e;
-    struct task_struct *task;
-    struct signal_struct *signal;
-    struct tty_struct *tty;
-    const char *tty_name;
 
     e = bpf_ringbuf_reserve(&events, sizeof(struct event), 0);
     if (!e) {

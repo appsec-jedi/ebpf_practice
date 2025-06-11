@@ -8,11 +8,15 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
+
+	"github.com/appsec-jedi/ebpf_practice/pkg/rules"
 )
 
 type event struct {
@@ -22,6 +26,23 @@ type event struct {
 }
 
 func main() {
+	ruleSet, err := rules.LoadRulesFromFile("rules.yaml")
+
+	if err != nil {
+		log.Println("Failed to load rules")
+	}
+	log.Println("\nLoaded rules", ruleSet)
+
+	var ruleArray []string
+
+	for _, rule := range ruleSet.Rules {
+		fmt.Printf("→ [%s] %s: %s (match: '%s')\n",
+			rule.Severity, rule.ID, rule.Description, rule.MatchCommand)
+		ruleArray = append(ruleArray, rule.MatchCommand)
+	}
+
+	log.Println("\nRule array:", ruleArray)
+
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +65,7 @@ func main() {
 	}
 	defer rd.Close()
 
-	log.Println("Listening for exec events...")
+	log.Println("\nListening for exec events...")
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
@@ -75,5 +96,19 @@ func main() {
 		comm := string(bytes.Trim(e.Comm[:], "\x00"))
 
 		fmt.Printf("[%s] PID %d executed %s\n", timestamp, e.Pid, comm)
+
+		if slices.Contains(ruleArray, comm) {
+			log.Println("\n***Malicious command found!", comm)
+
+		}
+
+		cmdline, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", e.Pid))
+		if err == nil {
+			cmdStr := strings.ReplaceAll(string(cmdline), "\x00", " ")
+			if slices.Contains(ruleArray, comm) {
+				fmt.Printf("⚠️  Blacklisted command: %s\n", cmdStr)
+			}
+		}
+
 	}
 }

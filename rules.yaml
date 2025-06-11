@@ -29,3 +29,8 @@ rules:
       - "import os"
       - "os.system"
     severity: "high"
+
+  - id: recon_detected
+    description: Detect whoami used for recon
+    match_command: "whoami"
+    severity: "high"
