@@ -97,11 +97,6 @@ func main() {
 
 		fmt.Printf("[%s] PID %d executed %s\n", timestamp, e.Pid, comm)
 
-		if slices.Contains(ruleArray, comm) {
-			log.Println("\n***Malicious command found!", comm)
-
-		}
-
 		cmdline, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", e.Pid))
 		if err == nil {
 			cmdStr := strings.ReplaceAll(string(cmdline), "\x00", " ")
