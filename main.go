@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"slices"
 	"strings"
 	"time"
 
@@ -54,14 +53,6 @@ func main() {
 			writer.Flush()
 		}
 	}()
-
-	var ruleArray []string
-
-	for _, rule := range ruleSet.Rules {
-		fmt.Printf("→ [%s] %s: %s (match: '%s')\n",
-			rule.Severity, rule.ID, rule.Description, rule.MatchCommand)
-		ruleArray = append(ruleArray, rule.MatchCommand)
-	}
 
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Fatal(err)
@@ -117,12 +108,14 @@ func main() {
 
 		commandString := fmt.Sprintf("[%s] PID %d executed %s\n", timestamp, e.Pid, comm)
 
-		cmdline, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", e.Pid))
+		cmdlineBytes, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", e.Pid))
 		if err == nil {
-			cmdStr := strings.ReplaceAll(string(cmdline), "\x00", " ")
-			if slices.Contains(ruleArray, comm) {
-				fmt.Printf("⚠️  \tBlacklisted command: %s\n", cmdStr)
-				commandString = commandString + fmt.Sprintf("⚠️  \tBlacklisted command: %s\n", cmdStr)
+			cmdline := strings.ReplaceAll(string(cmdlineBytes), "\x00", " ")
+			for _, rule := range ruleSet.Rules {
+				if strings.Contains(cmdline, rule.MatchCommand) {
+					fmt.Printf("⚠️  [%s] %s matched rule: %s\n", rule.Severity, rule.ID, rule.MatchCommand)
+					commandString += fmt.Sprintf("⚠️  [%s] Rule: %s matched -> %s\n", rule.Severity, rule.ID, cmdline)
+				}
 			}
 		}
 

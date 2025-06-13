@@ -1,18 +1,17 @@
-[1969-12-31 18:52:38] PID 6713 executed bash
-[1969-12-31 18:52:38] PID 6715 executed lesspipe
-[1969-12-31 18:52:38] PID 6716 executed basename
-[1969-12-31 18:52:38] PID 6718 executed dirname
-[1969-12-31 18:52:38] PID 6719 executed dircolors
-[1969-12-31 18:52:40] PID 6721 executed ls
-[1969-12-31 18:52:44] PID 6724 executed ls
-[1969-12-31 18:52:51] PID 6727 executed whoami
-⚠️  	Blacklisted command: whoami 
-[1969-12-31 18:52:53] PID 6729 executed sh
-[1969-12-31 18:52:53] PID 6730 executed debian-sa1
-[1969-12-31 18:52:54] PID 6731 executed curl
-⚠️  	Blacklisted command: curl test.com 
-[1969-12-31 18:53:06] PID 6736 executed ls
-[1969-12-31 18:53:14] PID 6737 executed python3
-⚠️  	Blacklisted command: python3 -c 
-[1969-12-31 18:53:15] PID 6738 executed ls
-[1969-12-31 18:53:21] PID 6743 executed cat
+[1969-12-31 18:29:02] PID 5374 executed sh
+[1969-12-31 18:29:02] PID 5385 executed 9
+[1969-12-31 18:29:02] PID 5385 executed sa1
+[1969-12-31 18:29:02] PID 5385 executed sadc
+[1969-12-31 18:29:05] PID 5388 executed bash
+[1969-12-31 18:29:05] PID 5390 executed lesspipe
+[1969-12-31 18:29:05] PID 5391 executed basename
+[1969-12-31 18:29:05] PID 5393 executed dirname
+[1969-12-31 18:29:05] PID 5394 executed dircolors
+[1969-12-31 18:29:06] PID 5396 executed ls
+[1969-12-31 18:29:08] PID 5397 executed whoami
+⚠️  [high] Rule: recon_detected matched -> whoami 
+[1969-12-31 18:29:12] PID 5398 executed curl
+⚠️  [high] Rule: suspicious_curl matched -> curl test.com 
+[1969-12-31 18:29:21] PID 5400 executed python3
+⚠️  [high] Rule: suspicious_python_inline matched -> python3 
+⚠️  [high] Rule: suspicious_python3_inline matched -> python3 
