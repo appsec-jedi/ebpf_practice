@@ -26,14 +26,7 @@ type event struct {
 	Comm      [16]byte
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
 func openLogFile(path string) *os.File {
-	// Open file with append mode and create it if it doesn't exist
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatalf("failed to open log file: %v", err)
@@ -47,7 +40,6 @@ func main() {
 	if err != nil {
 		log.Println("Failed to load rules")
 	}
-	log.Println("\nLoaded rules", ruleSet)
 
 	logFile := openLogFile("logs/output.txt")
 	defer logFile.Close()
@@ -70,8 +62,6 @@ func main() {
 			rule.Severity, rule.ID, rule.Description, rule.MatchCommand)
 		ruleArray = append(ruleArray, rule.MatchCommand)
 	}
-
-	log.Println("\nRule array:", ruleArray)
 
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Fatal(err)
