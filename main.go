@@ -22,7 +22,7 @@ import (
 type event struct {
 	Timestamp uint64
 	Pid       uint32
-	Comm      [16]byte
+	Argv      [256]byte
 }
 
 func openLogFile(path string) *os.File {
@@ -34,13 +34,14 @@ func openLogFile(path string) *os.File {
 }
 
 func main() {
-	ruleSet, err := rules.LoadRulesFromFile("rules.yaml")
 
+	ruleSet, err := rules.LoadRulesFromFile("rules.yaml")
 	if err != nil {
 		log.Println("Failed to load rules")
 	}
 
-	logFile := openLogFile("logs/output.txt")
+	logFilePath := "app/logs/output.txt"
+	logFile := openLogFile(logFilePath)
 	defer logFile.Close()
 
 	writer := bufio.NewWriter(logFile)
@@ -64,11 +65,11 @@ func main() {
 	}
 	defer objs.Close()
 
-	tp, err := link.Tracepoint("sched", "sched_process_exec", objs.HandleExec, nil)
+	kp, err := link.Kprobe("do_execveat_common", objs.HandleExecKprobe, nil)
 	if err != nil {
 		log.Fatalf("attaching to tracepoint: %s", err)
 	}
-	defer tp.Close()
+	defer kp.Close()
 
 	rd, err := ringbuf.NewReader(objs.Events)
 	if err != nil {
@@ -104,24 +105,38 @@ func main() {
 		}
 
 		timestamp := time.Unix(0, int64(e.Timestamp)).Format("2006-01-02 15:04:05")
-		comm := string(bytes.Trim(e.Comm[:], "\x00"))
-
+		comm := string(bytes.Trim(e.Argv[:], "\x00"))
 		commandString := fmt.Sprintf("[%s] PID %d executed %s\n", timestamp, e.Pid, comm)
+
+		fmt.Println("DEBUG: Executed command:", comm)
 
 		cmdlineBytes, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", e.Pid))
 		if err == nil {
 			cmdline := strings.ReplaceAll(string(cmdlineBytes), "\x00", " ")
+			fmt.Println("DEBUG: Full cmdline:", cmdline)
+			matched := false
 			for _, rule := range ruleSet.Rules {
 				if strings.Contains(cmdline, rule.MatchCommand) {
+					matched = true
 					fmt.Printf("⚠️  [%s] %s matched rule: %s\n", rule.Severity, rule.ID, rule.MatchCommand)
 					commandString += fmt.Sprintf("⚠️  [%s] Rule: %s matched -> %s\n", rule.Severity, rule.ID, cmdline)
 				}
+				if !matched {
+					for _, rule := range ruleSet.Rules {
+						if strings.Contains(comm, rule.MatchCommand) {
+							fmt.Printf("⚠️ FALLBACK  [%s] %s matched rule: %s\n", rule.Severity, rule.ID, rule.MatchCommand)
+							commandString += fmt.Sprintf("⚠️ FALLBACK  [%s] Rule: %s matched -> %s\n", rule.Severity, rule.ID, cmdline)
+						}
+					}
+				}
 			}
+		} else {
+			fmt.Printf("DEBUG: Failed to read cmdline for PID %d: %v\n", e.Pid, err)
 		}
 
-		_, err = writer.WriteString(commandString)
-		if err != nil {
-			log.Printf("error writing to buffered log: %v", err)
+		if _, err := writer.WriteString(commandString); err != nil {
+			log.Printf("error writing to log: %v", err)
 		}
+		writer.Flush()
 	}
 }

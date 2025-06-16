@@ -54,7 +54,7 @@ type trace_execSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type trace_execProgramSpecs struct {
-	HandleExec *ebpf.ProgramSpec `ebpf:"handle_exec"`
+	HandleExecKprobe *ebpf.ProgramSpec `ebpf:"handle_exec_kprobe"`
 }
 
 // trace_execMapSpecs contains maps before they are loaded into the kernel.
@@ -109,12 +109,12 @@ type trace_execVariables struct {
 //
 // It can be passed to loadTrace_execObjects or ebpf.CollectionSpec.LoadAndAssign.
 type trace_execPrograms struct {
-	HandleExec *ebpf.Program `ebpf:"handle_exec"`
+	HandleExecKprobe *ebpf.Program `ebpf:"handle_exec_kprobe"`
 }
 
 func (p *trace_execPrograms) Close() error {
 	return _Trace_execClose(
-		p.HandleExec,
+		p.HandleExecKprobe,
 	)
 }
 
