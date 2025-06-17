@@ -1,49 +1,7 @@
-[2025-06-16 16:03:20.950141501 -0500 CDT m=+2.604126681] PID 6316 executed bash
-[2025-06-16 16:03:20.954735155 -0500 CDT m=+2.608720335] PID 6318 executed lesspipe
-[2025-06-16 16:03:20.955169775 -0500 CDT m=+2.609154955] PID 6319 executed basename
-[2025-06-16 16:03:20.956113389 -0500 CDT m=+2.610098569] PID 6321 executed dirname
-[2025-06-16 16:03:20.957185543 -0500 CDT m=+2.611170723] PID 6322 executed dircolors
-[2025-06-16 16:03:23.298285609 -0500 CDT m=+4.952270789] PID 6324 executed ls
-[2025-06-16 16:03:27.136437996 -0500 CDT m=+8.790423176] PID 6325 executed whoami
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️  [high] Rule: recon_detected matched -> whoami 
-[2025-06-16 16:03:30.707873268 -0500 CDT m=+12.361858448] PID 6326 executed curl
-⚠️  [high] Rule: suspicious_curl matched -> curl test.com 
-[2025-06-16 16:03:37.974070916 -0500 CDT m=+19.628056096] PID 6328 executed python3
-⚠️ FALLBACK  [high] Rule: suspicious_python_inline matched -> python3 -c 
-⚠️ FALLBACK  [high] Rule: suspicious_python3_inline matched -> python3 -c 
-⚠️ FALLBACK  [high] Rule: suspicious_python_inline matched -> python3 -c 
-⚠️ FALLBACK  [high] Rule: suspicious_python3_inline matched -> python3 -c 
-⚠️  [medium] Rule: python3_inline_exec matched -> python3 -c 
-⚠️  [high] Rule: suspicious_python_inline matched -> python3 -c 
-⚠️  [high] Rule: suspicious_python3_inline matched -> python3 -c 
-[2025-06-16 16:03:40.330226307 -0500 CDT m=+21.984211487] PID 6329 executed python3
-⚠️ FALLBACK  [high] Rule: suspicious_python_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python3_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python3_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python3_inline matched -> python3 
-⚠️  [high] Rule: suspicious_python_inline matched -> python3 
-⚠️  [high] Rule: suspicious_python3_inline matched -> python3 
-[1969-12-31 18:38:42] PID 6726 executed ls
-[1969-12-31 18:38:45] PID 6727 executed whoami
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️ FALLBACK  [high] Rule: recon_detected matched -> whoami 
-⚠️  [high] Rule: recon_detected matched -> whoami 
-[1969-12-31 18:38:48] PID 6728 executed python3
-⚠️ FALLBACK  [high] Rule: suspicious_python_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python3_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python3_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python_inline matched -> python3 
-⚠️ FALLBACK  [high] Rule: suspicious_python3_inline matched -> python3 
-⚠️  [high] Rule: suspicious_python_inline matched -> python3 
-⚠️  [high] Rule: suspicious_python3_inline matched -> python3 
+PID 3842 executed 
+PID 3844 executed 
+PID 4201 executed 
+PID 4203 executed 
+PID 4204 executed 
+PID 4204 executed 
+PID 4215 executed 

@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -9,20 +10,16 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"time"
 
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
-
-	"github.com/appsec-jedi/ebpf_practice/pkg/rules"
 )
 
 type event struct {
-	Timestamp uint64
-	Pid       uint32
-	Argv      [256]byte
+	Pid  uint32
+	Argv [96]byte
 }
 
 func openLogFile(path string) *os.File {
@@ -34,12 +31,6 @@ func openLogFile(path string) *os.File {
 }
 
 func main() {
-
-	ruleSet, err := rules.LoadRulesFromFile("rules.yaml")
-	if err != nil {
-		log.Println("Failed to load rules")
-	}
-
 	logFilePath := "app/logs/output.txt"
 	logFile := openLogFile(logFilePath)
 	defer logFile.Close()
@@ -65,9 +56,9 @@ func main() {
 	}
 	defer objs.Close()
 
-	kp, err := link.Kprobe("do_execveat_common", objs.HandleExecKprobe, nil)
+	kp, err := link.Kprobe("__arm64_sys_execve", objs.HandleExecKprobe, nil)
 	if err != nil {
-		log.Fatalf("attaching to tracepoint: %s", err)
+		log.Fatalf("attaching kprobe: %s", err)
 	}
 	defer kp.Close()
 
@@ -81,7 +72,6 @@ func main() {
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
-
 	go func() {
 		<-sig
 		log.Println("Interrupt received, exiting...")
@@ -104,37 +94,11 @@ func main() {
 			continue
 		}
 
-		timestamp := time.Unix(0, int64(e.Timestamp)).Format("2006-01-02 15:04:05")
-		comm := string(bytes.Trim(e.Argv[:], "\x00"))
-		commandString := fmt.Sprintf("[%s] PID %d executed %s\n", timestamp, e.Pid, comm)
+		argv := string(bytes.Trim(e.Argv[:], "\x00"))
+		logLine := fmt.Sprintf("PID %d executed %s\n", e.Pid, argv)
+		fmt.Print(logLine)
 
-		fmt.Println("DEBUG: Executed command:", comm)
-
-		cmdlineBytes, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", e.Pid))
-		if err == nil {
-			cmdline := strings.ReplaceAll(string(cmdlineBytes), "\x00", " ")
-			fmt.Println("DEBUG: Full cmdline:", cmdline)
-			matched := false
-			for _, rule := range ruleSet.Rules {
-				if strings.Contains(cmdline, rule.MatchCommand) {
-					matched = true
-					fmt.Printf("⚠️  [%s] %s matched rule: %s\n", rule.Severity, rule.ID, rule.MatchCommand)
-					commandString += fmt.Sprintf("⚠️  [%s] Rule: %s matched -> %s\n", rule.Severity, rule.ID, cmdline)
-				}
-				if !matched {
-					for _, rule := range ruleSet.Rules {
-						if strings.Contains(comm, rule.MatchCommand) {
-							fmt.Printf("⚠️ FALLBACK  [%s] %s matched rule: %s\n", rule.Severity, rule.ID, rule.MatchCommand)
-							commandString += fmt.Sprintf("⚠️ FALLBACK  [%s] Rule: %s matched -> %s\n", rule.Severity, rule.ID, cmdline)
-						}
-					}
-				}
-			}
-		} else {
-			fmt.Printf("DEBUG: Failed to read cmdline for PID %d: %v\n", e.Pid, err)
-		}
-
-		if _, err := writer.WriteString(commandString); err != nil {
+		if _, err := writer.WriteString(logLine); err != nil {
 			log.Printf("error writing to log: %v", err)
 		}
 		writer.Flush()
